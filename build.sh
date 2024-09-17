@@ -7,6 +7,7 @@
 
 cd /home/thu/projects/xmonad/
 
+mkdir -p /home/thu/.xmonad/
 ghc \
   -i/home/thu/projects/xmonad \
   --make /home/thu/projects/xmonad/xmonad.hs \
