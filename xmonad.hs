@@ -20,12 +20,12 @@ import XMonad.Util.SpawnOnce (spawnOnce)
 -- The key-repeat for ` is disabled so we can keep the flashed workspace
 -- as long as we want.
 
-
+import XMonad.Hooks.ManageDocks
 import FlashWorkspace (flashWorkspace, flashbackWorkspace)
 import SpawnOnceOn (spawnOnceOn)
 
 main = do
-  xmonad $ def
+  xmonad . docks $ def
     { modMask  = mod4Mask      -- Use Super_L (i.e. Windows) instead of Alt.
     , terminal = "xterm -b -1" -- Allows just enough space for 80 columns with
                                -- the font defined in configuration.nix.
@@ -42,7 +42,10 @@ main = do
 
     , handleEventHook = handleEventHook def `mappend` keyUpEventHook
 
-    , layoutHook = noBorders (smartBorders (layoutHook def))
+    , layoutHook =
+        avoidStruts
+          $ noBorders (smartBorders (layoutHook def))
+
     , manageHook = manageSpawn <+> manageHook def
     }
 
@@ -53,6 +56,7 @@ main = do
     , ((mod4Mask .|. shiftMask, xK_l),         spawn "physlock")
     , ((mod4Mask,               xK_grave),     flashWorkspace)
     , ((mod4Mask .|. shiftMask, xK_k),         spawn kitty)
+    , ((mod4Mask,               xK_b),         sendMessage ToggleStruts)
     ]
 
 chromium = "chromium --force-device-scale-factor=1.5 https://start.duckduckgo.com"
@@ -73,7 +77,7 @@ handleKeyRelease (KeyEvent {ev_event_type = t, ev_state = m, ev_keycode = code})
     userCodeDef () $ whenJust (M.lookup (mClean, s) ks) id
 handleKeyRelease _ = return ()
 
-ks = M.fromList $ 
+ks = M.fromList $
   [ ((mod4Mask, xK_grave), flashbackWorkspace)
     -- Flash back even is we already have released the mod key.
     -- I think this is ok since this will have an effect only when we stored
